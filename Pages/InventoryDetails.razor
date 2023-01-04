@@ -1,6 +1,4 @@
-﻿@page "/Inventory-Details"
-@    using Todo.Data;
-    using Todo.Data.Services;
+﻿@page "/inventory-details"
 
 <nav class="navbar navbar-light bg-light justify-content-between">
     <h1 class="navbar-brand mb-0 h1">Product Stocks Details</h1>
@@ -14,13 +12,12 @@
 <table class="table">
     <thead>
         <tr>
-
             <th>
                 <div class="d-flex">
                     Product Name
-                    <a class='btn text-@(_sortBy == "Item" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
-                       @onclick='()=>SortByHandler("Item")'>
-                        <span class='oi oi-sort-@(_sortBy == "Item" ? _sortDirection : "ascending")' />
+                    <a class='btn text-@(_sortBy == "Name" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                       @onclick='()=>SortByHandler("Name")'>
+                        <span class='oi oi-sort-@(_sortBy == "Name" ? _sortDirection : "ascending")' />
                     </a>
                 </div>
             </th>
@@ -28,9 +25,9 @@
             <th>
                 <div class="d-flex">
                     Quantity
-                    <a class='btn text-@(_sortBy == "QuantityInInventory" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
-                       @onclick='()=>SortByHandler("QuantityInInventory")'>
-                        <span class='oi oi-sort-@(_sortBy == "QuantityInInventory" ? _sortDirection : "ascending")' />
+                    <a class='btn text-@(_sortBy == "Quantity" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                       @onclick='()=>SortByHandler("Quantity")'>
+                        <span class='oi oi-sort-@(_sortBy == "Quantity" ? _sortDirection : "ascending")' />
                     </a>
                 </div>
             </th>
@@ -38,68 +35,54 @@
             <th>
                 <div class="d-flex">
                     Date and Time
-                    <a class='btn text-@(_sortBy == "TakenOutOn" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
-                       @onclick='()=>SortByHandler("TakenOutOn")'>
-                        <span class='oi oi-sort-@(_sortBy == "dueDate" ? _sortDirection : "ascending")' />
+                    <a class='btn text-@(_sortBy == "LastTakenOut" ? "primary" : "secondary")' data-mdb-toggle="tooltip"
+                       @onclick='()=>SortByHandler("LastTakenOut")'>
+                        <span class='oi oi-sort-@(_sortBy == "LastTakenOut" ? _sortDirection : "ascending")' />
                     </a>
                 </div>
             </th>
 
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @{
-            IEnumerable<TodoItem> todoList = _todos;
-            if (_sortBy == "status")
+            IEnumerable<Item> itemsList = _todos;
+            if (_sortBy == "Name")
             {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.IsDone) : todoList.OrderByDescending(t =>
-                t.IsDone);
-            }
-            else if (_sortBy == "Item")
-            {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.Item) : todoList.OrderByDescending(t =>
-                t.Item);
+                itemsList = _sortDirection == "ascending" ? itemsList.OrderBy(t => t.Name) : itemsList.OrderByDescending(t =>
+                t.Name);
             }
 
-            else if (_sortBy == "QuantityInInventory")
+            else if (_sortBy == "Quantity")
             {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.QuantityInInventory) : todoList.OrderByDescending(t =>
-                t.QuantityInInventory);
+                itemsList = _sortDirection == "ascending" ? itemsList.OrderBy(t => t.Quantity) : itemsList.OrderByDescending(t =>
+                t.Quantity);
             }
 
-            else if (_sortBy == "TakenOutOn")
+            else if (_sortBy == "LastTakenOut")
             {
-                todoList = _sortDirection == "ascending" ? todoList.OrderBy(t => t.TakenOutOn) : todoList.OrderByDescending(t =>
-                t.TakenOutOn);
+                itemsList = _sortDirection == "ascending" ? itemsList.OrderBy(t => t.LastTakenOut) : itemsList.OrderByDescending(t =>
+                t.LastTakenOut);
             }
 
-            if (_tabFilter == "Due")
-            {
-                todoList = todoList.Where(t => !t.IsDone);
-            }
-            else if (_tabFilter == "Done")
-            {
-                todoList = todoList.Where(t => t.IsDone);
-            }
-
-            foreach (var todoItem in todoList)
+            foreach (var item in itemsList)
             {
                 <tr>
                    
-                    <td class='@(todoItem.IsDone ? "text-decoration-line-through" : "")'>@todoItem.Item</td>
-                    <td class='@(todoItem.IsDone ? "text-decoration-line-through" : "")'>@todoItem.QuantityInInventory</td>
+                    <td>@item.Name</td>
+                    <td>@item.Quantity</td>
                     <td>
                         <p class="small mb-0">
-                            @todoItem.TakenOutOn.ToString("MMM dd, yyyy h:mm tt")
+                            @(item.LastTakenOut != DateTime.MinValue ? item.LastTakenOut.ToString("dd'/'MM'/'yyyy h:mm tt") : "---")
                         </p>
                     </td>
                     <td>
-                        <button disabled="@todoItem.IsDone" class="btn btn-outline-secondary" type="button"
-                            @onclick="()=>OpenEditTodoDialog(todoItem)">
+                        <button class="btn btn-outline-success" type="button"
+                            @onclick="()=>OpenAddQuantity(item)">
                             <span class="oi oi-pencil" /> Edit
                         </button>
-                       <button class="btn btn-outline-danger" type="button" @onclick="()=>OpenDeleteTodoDialog(todoItem)">
+                       <button class="btn btn-outline-danger" type="button" @onclick="()=>OpenDeleteTodoDialog(item)">
                             <span class="oi oi-delete" /> Delete
                         </button>
                     </td>
@@ -109,38 +92,12 @@
     </tbody>
 </table>
 
-@if (_showEditTodoDialog)
-{
-    <ModalDialog Title="@_dialogTitle" OnClose="@OnEditTodoDialogClose" OkLabel="@_dialogOkLabel">
-        <div class="form-floating mt-2">
-            <input id="Item" type="text" class="form-control" @bind="_todoModel.Item" placeholder="Item " />
-            <label for="Item">Product Name </label>
-        </div>
-        <div class="form-floating mt-2">
-            <input id="QuantityInInventory" type="text" class="form-control" @bind="_todoModel.QuantityInInventory" placeholder="QuantityInInventory" />
-            <label for="QuantityInInventory">Quantity </label>
-        </div>
 
-
-
-        <div class="form-floating mt-2">
-            <label for="TakenOutOn">Taken Out On</label> 
-            <input id="TakenOutOn" type="date" min='@DateTime.Today.ToString("yyyy-MM-dd")'
-               value='@_todoModel.TakenOutOn.ToString("yyyy-MM-dd")' @onchange="updateDate" class="form-control text-left"
-               placeholder="Taken Out On">
-        </div>
-
-        @if (!string.IsNullOrEmpty(_editTodoErrorMessage))
-        {
-            <AlertMessage Type="danger" Message="@_editTodoErrorMessage" />
-        }
-    </ModalDialog>
-}
 
 @if (_showDeleteTodoDialog)
 {
     <ModalDialog Title="Delete Todo" OnClose="@OnDeleteTodoDialogClose" OkLabel="Confirm">
-        <p>Are you sure you want to delete <strong>@_deleteTodo.TaskName</strong> task?</p>
+        <p>Are you sure you want to delete <strong>@_deleteTodo.Name</strong>?</p>
         @if (!string.IsNullOrEmpty(_deleteTodoErrorMessage))
         {
             <AlertMessage Type="danger" Message="@_deleteTodoErrorMessage" />
@@ -153,13 +110,13 @@
     private GlobalState _globalState { get; set; }
     private bool _showEditTodoDialog { get; set; }
     private bool _showDeleteTodoDialog { get; set; }
-    private List<TodoItem> _todos { get; set; }
-    private TodoItem _deleteTodo { get; set; }
+    private List<Item> _todos { get; set; }
+    private Item _deleteTodo { get; set; }
     private string _dialogTitle { get; set; }
     private string _dialogOkLabel { get; set; }
     private string _editTodoErrorMessage { get; set; }
     private string _deleteTodoErrorMessage { get; set; }
-    private TodoItem _todoModel { get; set; }
+    private Item _todoModel { get; set; }
     private string _tabFilter = "All";
     private string _sortBy = "dueDate";
     private string _sortDirection = "ascending";
@@ -167,7 +124,7 @@
 
     protected override void OnInitialized()
     {
-        _todos = InventoryService.GetAll(_globalState.CurrentUser.Id);
+        _todos = ItemService.GetAllItems();
     }
 
     private void SortByHandler(string sortByName)
@@ -187,7 +144,7 @@
     {
         _dialogTitle = "Add Product";
         _dialogOkLabel = "Add";
-        _todoModel = new TodoItem();
+        _todoModel = new Item();
         _todoModel.Id = Guid.Empty;
         _showEditTodoDialog = true;
     }
@@ -197,65 +154,21 @@
         var searchTerm = e.Value.ToString();
         if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 2)
         {
-            _todos = InventoryService.GetAll(_globalState.CurrentUser.Id).Where(t =>
-            t.Item.ToLower().Contains(searchTerm.ToLower())).ToList();
+            _todos = ItemService.GetAllItems().Where(t =>
+            t.Name.ToLower().Contains(searchTerm.ToLower())).ToList();
         }
         else
         {
-            _todos = InventoryService.GetAll(_globalState.CurrentUser.Id);
+            _todos = ItemService.GetAllItems();
         }
     }
 
-    private void OpenEditTodoDialog(TodoItem editTodo)
-    {
-        _dialogTitle = "Edit Todo";
-        _dialogOkLabel = "Save";
-
-        _todoModel = editTodo;
-
-        _showEditTodoDialog = true;
-    }
-
-    private void OpenDeleteTodoDialog(TodoItem todoItem)
+    private void OpenDeleteTodoDialog(Item todoItem)
     {
         _deleteTodo = todoItem;
         _showDeleteTodoDialog = true;
     }
 
-    private void updateDate(ChangeEventArgs e)
-    {
-        _todoModel.TakenOutOn = DateTime.Parse(e.Value.ToString());
-    }
-    private void OnEditTodoDialogClose(bool isCancel)
-    {
-        if (isCancel)
-        {
-            _showEditTodoDialog = false;
-        }
-        else
-        {
-            try
-            {
-                _editTodoErrorMessage = "";
-                if (_todoModel.Id == Guid.Empty)
-                {
-
-                    var data = InventoryService.Create(user.Id, _todoModel.Id, _todoModel.Item, _todoModel.TakenOutOn, _todoModel.QuantityInInventory);
-
-
-                }
-                else
-                {
-                    _todos = InventoryService.Update(_globalState.CurrentUser.Id, _todoModel.Id, _todoModel.Item, _todoModel.TakenOutOn, _todoModel.QuantityInInventory);
-                }
-                _showEditTodoDialog = false;
-            }
-            catch (Exception e)
-            {
-                _editTodoErrorMessage = e.Message;
-            }
-        }
-    }
     private void OnDeleteTodoDialogClose(bool isCancel)
     {
         if (isCancel)
@@ -269,7 +182,7 @@
             try
             {
                 _deleteTodoErrorMessage = "";
-                _todos = InventoryService.Delete(_globalState.CurrentUser.Id, _deleteTodo.Id);
+                _todos = ItemService.DeleteItem( _deleteTodo.Id);
                 _showDeleteTodoDialog = false;
                 _deleteTodo = null;
             }
@@ -278,15 +191,5 @@
                 _deleteTodoErrorMessage = e.Message;
             }
         }
-    }
-    private void TabFilter(string status)
-    {
-        _tabFilter = status;
-    }
-    private void ToggleDone(TodoItem todo)
-    {
-        todo.IsDone = !todo.IsDone;
-        _todos = InventoryService.Update(_globalState.CurrentUser.Id, todo.Id, todo.Item, todo.TakenOutOn, _todoModel.QuantityInInventory);
-
     }
 }

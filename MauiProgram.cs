@@ -1,4 +1,6 @@
-﻿namespace Todo;
+﻿using Microsoft.AspNetCore.Components.WebView.Maui;
+using Coursework.Data.Services;
+namespace Coursework;
 
 public static class MauiProgram
 {

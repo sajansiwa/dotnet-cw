@@ -116,7 +116,7 @@
             _globalState.CurrentUser = UsersService.Login(_username, _password);
             if (_globalState.CurrentUser != null)
             {
-                NavManager.NavigateTo(_globalState.CurrentUser.HasInitialPassword ? "/change-password" : "/");
+                NavManager.NavigateTo(_globalState.CurrentUser.HasInitialPassword ? "/change-password" : "/todos");
             }
         }
         catch (Exception e)

@@ -13,7 +13,7 @@ namespace Todo.Data
         public static List<DataAnalysisDTO> DataAnalysisDTO(Guid userId)
         {
             List<DataAnalysisDTO> dataAnalysisDTO = new List<DataAnalysisDTO>();
-            var data = InventoryService.GetAll(userId);
+            var data = ItemRequestsService.GetAll(userId);
             foreach (var item in data)
             {
                 dataAnalysisDTO.Add(new DataAnalysisDTO { TitleName = item.Item, ValueCount = item.QuantityInInventory});

@@ -1,11 +1,14 @@
-﻿using Coursework.Data.Model; 
+﻿using System.Text.Json;
+using Coursework.Data.Model; 
+
 namespace Coursework.Data.Services;
 
 public static class ItemService
 {
-    private static void SaveAllItems(List<Item> todos)
+    public static void SaveAllItems(List<Item> todos)
     {
         string appDataDirectoryPath = Utils.GetAppDirectoryPath();
+        string appItemsFilePath = Utils.GetItemsFilePath();
 
         if (!Directory.Exists(appDataDirectoryPath))
         {
@@ -13,83 +16,69 @@ public static class ItemService
         }
 
         var json = JsonSerializer.Serialize(todos);
-        File.WriteAllText(todosFilePath, json);
+        File.WriteAllText(appItemsFilePath, json);
     }
 
-    public static List<TodoItem> GetAll(Guid userId)
+    public static List<Item> GetAllItems()
     {
-        string todosFilePath = Utils.GetTodosFilePath(userId);
-        if (!File.Exists(todosFilePath))
+        string itemFilePath = Utils.GetItemsFilePath();
+        if (!File.Exists(itemFilePath))
         {
-            return new List<TodoItem>();
+            return new List<Item>();
         }
 
-        var json = File.ReadAllText(todosFilePath);
+        var json = File.ReadAllText(itemFilePath);
 
-        return JsonSerializer.Deserialize<List<TodoItem>>(json);
+        return JsonSerializer.Deserialize<List<Item>>(json);
     }
 
-    public static List<TodoItem> Create(Guid userId, Guid id, string Item, DateTime TakenOutOn, int QuantityInInventory)
+    public static List<Item> CreateItem(Guid userId, Guid id, string name, int quantityInInventory)
     {
-        if (TakenOutOn < DateTime.Today)
+        if(quantityInInventory <= 0)
         {
-            throw new Exception("Due date must be in the future.");
+            throw new Exception("Quantity must be greater than 0.");
         }
-
-        List<TodoItem> todos = GetAll(userId);
-        todos.Add(new TodoItem
+        
+        List<Item> items = GetAllItems();
+        items.Add(new Item
         {
-
-            CreatedBy = userId,
-            Item = Item,
-            TakenOutOn = TakenOutOn,
-            QuantityInInventory = QuantityInInventory,
+            Name = name,
+            Quantity = quantityInInventory,
 
 
         });
-        SaveAll(userId, todos);
-        return todos;
+        SaveAllItems(items);
+        return items;
     }
 
-    public static List<TodoItem> Delete(Guid userId, Guid id)
+    public static List<Item> DeleteItem(Guid id)
     {
-        List<TodoItem> todos = GetAll(userId);
-        TodoItem todo = todos.FirstOrDefault(x => x.Id == id);
+        List<Item> items = GetAllItems();
+        Item item = items.FirstOrDefault(x => x.Id == id);
 
-        if (todo == null)
+        if (item == null)
         {
             throw new Exception("Item's not found.");
         }
 
-        todos.Remove(todo);
-        SaveAll(userId, todos);
-        return todos;
+        items.Remove(item);
+        SaveAllItems(items);
+        return items;
     }
 
-    public static void DeleteByUserId(Guid userId)
+    public static List<Item> UpdateQuantity(Guid id, int QuantityInInventory)
     {
-        string todosFilePath = Utils.GetTodosFilePath(userId);
-        if (File.Exists(todosFilePath))
-        {
-            File.Delete(todosFilePath);
-        }
-    }
-
-    public static List<TodoItem> Update(Guid userId, Guid id, string Item, DateTime TakenOutOn, int QuantityInInventory)
-    {
-        List<TodoItem> todos = GetAll(userId);
-        TodoItem todoToUpdate = todos.FirstOrDefault(x => x.Id == id);
+        List<Item> items = GetAllItems();
+        Item todoToUpdate = items.FirstOrDefault(x => x.Id == id);
 
         if (todoToUpdate == null)
         {
             throw new Exception("Item's not found.");
         }
 
-        todoToUpdate.Item = Item;
-        todoToUpdate.TakenOutOn = TakenOutOn;
-        todoToUpdate.QuantityInInventory = QuantityInInventory;
-        SaveAll(userId, todos);
-        return todos;
+        todoToUpdate.Quantity += QuantityInInventory;
+        SaveAllItems(items);
+        return items;
 
     }
 }

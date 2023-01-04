@@ -44,7 +44,10 @@ public static class Utils
 
     public static string GetAppDirectoryPath()
     {
-        return @"D:\Third Year\Application Development\.NET Todo\todo\wwwroot\Test\";
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Inventory-Management"
+            );
     }
  
     public static string GetAppUsersFilePath()
@@ -52,8 +55,13 @@ public static class Utils
         return Path.Combine(GetAppDirectoryPath(), "users.json");
     }
 
-    public static string GetTodosFilePath(Guid userId)
+    public static string GetItemsFilePath()
     {
-        return Path.Combine(GetAppDirectoryPath() + "_todos.json");
+        return Path.Combine(GetAppDirectoryPath() + "items.json");
+    }
+
+    public static string GetItemRequestsFilePath()
+    {
+        return Path.Combine(GetAppDirectoryPath(), "itemrequests.json");
     }
 }

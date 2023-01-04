@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Todo.Data.Model;
+﻿using Coursework.Data.Model;
 
-namespace Todo.Data;
+namespace Coursework.Data;
 
 public class GlobalState
 {

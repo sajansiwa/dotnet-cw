@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Todo.Data.Model;
+using Coursework.Data.Model;
 
-namespace Todo.Data.Services;
+namespace Coursework.Data.Services;
 
 public static class UsersService
 {
